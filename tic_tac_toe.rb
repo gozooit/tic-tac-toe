@@ -62,7 +62,7 @@ class Grid
   def column_values
     values_hash = row_values
     column_hash = {}
-    for i in 0..2 do
+    [0, 1, 2].each do |i|
       column_hash["column#{i + 1}".to_sym] = []
       values_hash.each do |_row, array|
         column_hash["column#{i + 1}".to_sym] << array[i]
@@ -79,14 +79,12 @@ class Grid
     }
   end
 
-  def test
+  def winner?(symbol)
     all = row_values.merge(column_values).merge(diagonal_values)
-    p all
-  end
-
-  def row_win?(symbol)
-    # @grid.each { |_row, array| array.all? { |tile| tile == symbol } }
-    # @grid[":#{row}"].all? { |pos| pos == symbol }
+    all.each do |_key, values|
+      return true if values.all? { |value| value == symbol}
+    end
+    false
   end
 
   def display
@@ -96,55 +94,38 @@ class Grid
   end
 end
 
-play = true
-cpt = 0
+class Game
+  def self.new_game
+    @grid = Grid.new
+    puts 'Please enter the name for player X :'
+    @player1 = Player.new(gets.chomp, 'X')
+    puts 'Please enter the name for player O :'
+    @player2 = Player.new(gets.chomp, 'O')
+  end
 
-grid = Grid.new
+  def self.display_winner(player)
+    return false unless @grid.winner?(player.symbol)
 
-grid.add_symbol('a1', 'X')
-grid.add_symbol('a2', 'X')
-grid.add_symbol('a3', 'X')
+    @grid.display
+    puts "Player #{player.name} won !"
+    true
+  end
 
-pp grid.row_values
-pp grid.column_values
-pp grid.diagonal_values
+  def self.play_turn(player)
+    puts "Player #{player.name}, please play your turn"
+    @grid.add_symbol(gets.chomp, player.symbol)
+    display_winner(player)
+  end
 
-pp grid.test
+  def self.play
+    cpt = 0
+    loop do
+      cpt += 1
+      stop = cpt.odd? ? play_turn(@player1) : play_turn(@player2)
+      break if stop == true
+    end
+  end
+end
 
-# while play == true
-#   cpt += 1
-#   if Player.total_number_of_player < 2
-#     puts 'Please enter the name for player X :'
-#     p1 = Player.new(gets, 'X')
-#     puts 'Please enter the name for player O :'
-#     p2 = Player.new(gets, 'O')
-#   end
-#   if cpt.odd?
-#     puts 'Player X, please play your turn'
-#     grid.add_symbol(gets.chomp, p1.symbol)
-#     p grid.row_win?(p1.symbol)
-#     p grid.row_win?(p1.symbol)
-#   elsif cpt.even?
-#     puts 'Player O, please play your turn'
-#     grid.add_symbol(gets.chomp, p2.symbol)
-#   end
-#   grid.display
-# end
-
-# player1 = Player.new('gozoo', 'X')
-
-# puts player1.name
-# puts player1.score
-# player1.rename('heho')
-# puts player1.name
-# player2 = Player.new('richard', 'O')
-# player2.score
-# puts Player.total_number_of_player
-
-# grid = Grid.new
-
-# grid.display_grid
-# grid.add_symbol('a1', 'X')
-# grid.display_grid
-# grid.add_symbol('b2', 'O')
-# grid.display_grid
+Game.new_game
+Game.play
