@@ -34,6 +34,7 @@ class Grid
     }
   end
 
+  # Need to check if position is empty first
   def add_symbol(position, symbol)
     # position au format a1 : a le nom de la liste, 1 la position
     x, y = ''
@@ -95,8 +96,14 @@ class Grid
 end
 
 class Game
-  def self.new_game
-    @grid = Grid.new
+  def self.initialize_players
+    if Player.total_number_of_player >= 2
+      puts 'Do you want to change players ? (yes / no)'
+      change_players = gets.downcase.chomp
+    end
+
+    return if change_players == 'no'
+
     puts 'Please enter the name for player X :'
     @player1 = Player.new(gets.chomp, 'X')
     puts 'Please enter the name for player O :'
@@ -118,14 +125,26 @@ class Game
   end
 
   def self.play
+    @grid = Grid.new
     cpt = 0
     loop do
       cpt += 1
       stop = cpt.odd? ? play_turn(@player1) : play_turn(@player2)
+      @grid.display
       break if stop == true
     end
   end
+
+  def self.replay?
+    puts 'Do you want to replay ? (yes / no)'
+    gets.downcase.chomp == 'yes'
+  end
 end
 
-Game.new_game
-Game.play
+play = true
+
+while play == true
+  Game.initialize_players
+  Game.play
+  play = Game.replay?
+end
