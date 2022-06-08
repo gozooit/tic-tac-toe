@@ -25,37 +25,48 @@ end
 
 class Grid
   def initialize
+    # @grid = {
+    #   top: [' ', ' | ', ' ', ' | ', ' '],
+    #   separator1: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
+    #   mid: [' ', ' | ', ' ', ' | ', ' '],
+    #   separator2: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
+    #   bot: [' ', ' | ', ' ', ' | ', ' ']
+    # }
     @grid = {
-      a: [' ', ' | ', ' ', ' | ', ' '],
-      separator1: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      b: [' ', ' | ', ' ', ' | ', ' '],
-      separator2: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      c: [' ', ' | ', ' ', ' | ', ' ']
+      top: [' ', ' ', ' '],
+      mid: [' ', ' ', ' '],
+      bot: [' ', ' ', ' ']
     }
   end
 
+  # def add_symbol(position, symbol)
+  #   position = position.to_i
+  #   @grid[:top][position] = symbol if position.between?(7, 9)
+  #   @grid[:mid][position] = symbol if position.between?(4, 6)
+  #   @grid[:bot][position] = symbol if position.between?(1, 3)
+  # end
+
   # Need to check if position is empty first
   def add_symbol(position, symbol)
-    # position au format a1 : a le nom de la liste, 1 la position
-    x, y = ''
-    position.split('').each do |pos|
-      case pos
-      when '1' then x = 0
-      when '2' then x = 2
-      when '3' then x = 4
-      else y = pos.to_sym
-      end
+    case position
+    when 7..9
+      @grid[:top][position % 3 - 1] = symbol
+    when 4..6
+      @grid[:mid][position % 3 - 1] = symbol
+    when 1..3
+      @grid[:bot][position - 1] = symbol
+    else
+      'error'
     end
-    @grid[y][x] = symbol
   end
 
   def row_values
     # values_hash = @grid.select { |row, _array| row == 'a' || 'b' || 'c' }
     values_hash = {}
     @grid.each do |row, array|
-      values_hash[:a] = array.join('').split(' | ') if row.to_s == 'a'
-      values_hash[:b] = array.join('').split(' | ') if row.to_s == 'b'
-      values_hash[:c] = array.join('').split(' | ') if row.to_s == 'c'
+      values_hash[:top] = array.join('').split(' | ') if row.to_s == 'top'
+      values_hash[:mid] = array.join('').split(' | ') if row.to_s == 'mid'
+      values_hash[:bot] = array.join('').split(' | ') if row.to_s == 'bot'
     end
     values_hash
   end
@@ -75,24 +86,42 @@ class Grid
   def diagonal_values
     values_hash = row_values
     {
-      diagonal1: [values_hash['a'.to_sym][0], values_hash['b'.to_sym][1], values_hash['c'.to_sym][2]],
-      diagonal2: [values_hash['a'.to_sym][2], values_hash['b'.to_sym][1], values_hash['c'.to_sym][0]]
+      diagonal1: [values_hash[:top][0], values_hash[:mid][1], values_hash[:bot][2]],
+      diagonal2: [values_hash[:top][2], values_hash[:mid][1], values_hash[:bot][0]]
     }
   end
 
   def winner?(symbol)
     all = row_values.merge(column_values).merge(diagonal_values)
     all.each do |_key, values|
-      return true if values.all? { |value| value == symbol}
+      return true if values.all? { |value| value == symbol }
     end
     false
   end
 
-  def display
+  def displayold
+    array = Array.new(@grid.values)
+    array.map do |_row, value|
+      value.insert(1, ' | ')
+      value.insert(3, ' | ')
+    end
+    array.insert(1, ['-', '-', '-', '-', '-', '-', '-', '-', '-'])
+    array.insert(3, ['-', '-', '-', '-', '-', '-', '-', '-', '-'])
     puts
-    @grid.each { |_row, column| puts column.join }
+    array.each { |arr| puts arr.join }
     puts
   end
+  
+  def display
+    array = Array.new(@grid.values)
+    array.each do |arr|
+      arr.insert(1, ' | ')
+      arr.insert(3, ' | ')
+    end
+    pp array
+    pp @grid
+  end
+
 end
 
 class Game
@@ -120,7 +149,7 @@ class Game
 
   def self.play_turn(player)
     puts "Player #{player.name}, please play your turn"
-    @grid.add_symbol(gets.chomp, player.symbol)
+    @grid.add_symbol(gets.chomp.to_i, player.symbol)
     display_winner(player)
   end
 
@@ -141,10 +170,20 @@ class Game
   end
 end
 
-play = true
+# play = true
 
-while play == true
-  Game.initialize_players
-  Game.play
-  play = Game.replay?
-end
+# while play == true
+#   Game.initialize_players
+#   Game.play
+#   play = Game.replay?
+# end
+
+grid = Grid.new
+
+p grid
+
+grid.display
+grid.display
+grid.display
+
+p grid
